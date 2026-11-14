@@ -1,0 +1,7 @@
+{
+  "name": "Asuka DS Form",
+  "id": "dev.egoist.asukads.form",
+  "version": "0.1.0",
+  "build": 1,
+  "orientations": ["portrait", "landscape"]
+}

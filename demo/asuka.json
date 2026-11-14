@@ -1,0 +1,7 @@
+{
+  "name": "Asuka DS",
+  "id": "dev.egoist.asukads.demo",
+  "version": "0.1.0",
+  "build": 1,
+  "orientations": ["portrait", "landscape"]
+}
