@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	ds "asuka-ds"
 
@@ -25,6 +26,8 @@ func App() ui.Node {
 	plan := signal.New(1)
 	framework := signal.New(0)
 	volume := signal.New(0.62)
+	page := signal.New(3)
+	start := signal.New(time.Now())
 	accordion := signal.New(0)
 	sheetOpen := signal.New(false)
 
@@ -96,10 +99,12 @@ func App() ui.Node {
 						Description: "Shown on your profile."}),
 					ds.Input(ds.InputProps{Value: email, Label: "Email", Placeholder: "ada@example.com",
 						Icon: ui.IconMail, Error: "That address is already taken."}),
-					ds.Input(ds.InputProps{Value: bio, Label: "Bio", Multiline: true, Lines: 3,
+					ds.Textarea(ds.TextareaProps{Value: bio, Label: "Bio",
 						Placeholder: "A few words about you"}),
 					ds.Input(ds.InputProps{Value: workspace, Label: "Workspace", Placeholder: "acme", Disabled: true,
 						Description: "Ask an admin to change it."}),
+					ds.DatePicker(ds.DatePickerProps{Label: "Start date", Value: start,
+						Description: "The platform's own picker."}),
 					ui.View(ui.ViewProps{Label: ui.Val("Email notifications")},
 						ui.Row(ui.Style{Gap: ds.Space3, Align: ui.AlignCenter},
 							ui.Toggle(ui.ToggleProps{Value: notify}),
@@ -127,6 +132,17 @@ func App() ui.Node {
 						ds.Muted("The panel follows the tab's signal: only the text is re-sent."),
 					)),
 				),
+			),
+		),
+
+		Section("Breadcrumb & pagination",
+			ui.Column(ui.Style{Gap: ds.Space4},
+				ds.Breadcrumb(ds.BreadcrumbProps{Items: []ds.BreadcrumbItem{
+					{Title: "Projects", OnPress: func() {}},
+					{Title: "asuka-ds", OnPress: func() {}},
+					{Title: "Settings"},
+				}}),
+				ds.Pagination(ds.PaginationProps{Page: page, Total: 12}),
 			),
 		),
 
@@ -214,6 +230,10 @@ func App() ui.Node {
 						),
 						ds.Progress(ds.ProgressProps{Value: ui.Val(0.68), Label: "Storage", ShowValue: true}),
 						ds.Progress(ds.ProgressProps{Value: ui.Val(float64(-1)), Label: "Indexing"}),
+						ui.Row(ui.Style{Gap: ds.Space3, Align: ui.AlignCenter},
+							ds.Spinner(ds.SpinnerProps{Label: "Syncing"}),
+							ds.Spinner(ds.SpinnerProps{Size: 16}),
+						),
 						ui.Row(ui.Style{Gap: ds.Space2, Wrap: true},
 							ds.Button(ds.ButtonProps{Text: "Toast", Variant: ds.Outline, Size: ds.Small,
 								OnPress: func() { ds.Toast("Saved", &ds.DialogAction{Title: "Undo"}) }}),
@@ -242,6 +262,25 @@ func App() ui.Node {
 						Striped: true,
 					}),
 				),
+			),
+		),
+
+		Section("Empty states & shortcuts",
+			ui.Column(ui.Style{Gap: ds.Space4},
+				ui.Row(ui.Style{Gap: ds.Space2, Align: ui.AlignCenter},
+					ds.Kbd("⌘", "K"),
+					ds.Muted("opens the command palette"),
+					ds.Kbd("⌘", "⇧", "P"),
+				),
+				ds.EmptyState(ds.EmptyStateProps{
+					Icon:        ui.IconFolder,
+					Title:       "No projects yet",
+					Description: "Create a project to deploy your first app.",
+					Action: func() ui.Node {
+						return ds.Button(ds.ButtonProps{Text: "New project", Icon: ui.IconPlus,
+							Variant: ds.Primary, OnPress: func() {}})
+					},
+				}),
 			),
 		),
 

@@ -99,11 +99,11 @@ ds.SetAppearance(ui.ColorSchemeDark)
 
 | 类别 | 组件 |
 |---|---|
-| Surface | `Card` 系列、`Badge`、`Separator`、`Skeleton`、`Alert`、`Avatar`、`Progress`、`Table` |
-| Form | `Input`、`Field`、`Switch`/Checkbox、`RadioGroup`、`Select`、`Slider`、`Command` |
-| Navigation | `Tabs`、`Accordion` |
+| Surface | `Card` 系列、`Badge`、`Separator`、`Skeleton`、`Alert`、`Avatar`、`Progress`、`Spinner`、`Table`、`EmptyState` |
+| Form | `Input`、`Textarea`、`DatePicker`、`Field`、`Switch`/Checkbox、`RadioGroup`、`Select`、`Slider`、`Command` |
+| Navigation | `Tabs`、`Accordion`、`Breadcrumb`、`Pagination` |
 | Overlay | `Dialog`、`ConfirmDialog`、`Overlay`、`Menu`、`Toast`、`Tooltip` |
-| Typography | `Heading`、`Title`、`Text`、`Muted`、`Screen` |
+| Typography | `Heading`、`Title`、`Text`、`Muted`、`Kbd`、`Screen` |
 | Button | `Button` / `NativeButton`：6 变体 × 4 尺寸 |
 
 `Pressable` 是所有自绘交互的统一入口：disabled、selected、expanded 通过动态 `Hint` 与事件门控表达；原生控件则直接使用平台自己的 disabled/checked 语义。
