@@ -33,7 +33,7 @@ jobs:
           go-version: "1.26"
           cache: true
       - name: Install asuka
-        run: go install github.com/egoist/asuka/cmd/asuka@v0.1.1
+        run: go install github.com/egoist/asuka/cmd/asuka@27feead95ea8489a53d2b06c46787ec7c040dcce
       - name: Vet Asuka app
         run: asuka vet ./...
       - name: Build docs site
