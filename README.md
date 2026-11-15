@@ -175,6 +175,12 @@ asuka dev --platform web website
 asuka build --platform web website   # 输出 website/dist/web
 ```
 
+推送到 `main` 后，`.github/workflows/pages.yml` 会把文档站发布到 GitHub Pages；
+在仓库 Settings → Pages 里把 Source 选成 “GitHub Actions” 即可，地址是
+`https://<owner>.github.io/<repo>/`。构建用 `--base` 指向仓库名，项目页子路径下
+的 wasm、manifest 和 service worker 都能正常加载；绑定自定义域名（站点在根路径）
+时，去掉该命令的 `--base` 即可。
+
 两个演示应用：
 
 ```sh
