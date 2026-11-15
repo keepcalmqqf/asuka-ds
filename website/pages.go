@@ -1,7 +1,7 @@
 package main
 
 import (
-	ds "github.com/egoist/asuka-ds"
+	ds "github.com/egoist/asuka-ds/ds"
 	"github.com/egoist/asuka-ds/internal/catalog"
 	"github.com/egoist/asuka/ui"
 )
@@ -95,7 +95,7 @@ func installPage() ui.Node {
 		pageHeader("Installation", "Install the CLI, start a design-system package, then add only the components you need."),
 		section("1. Install the CLI",
 			code(`go install github.com/egoist/asuka-ds/cmd/asuka-ds@latest`),
-			ds.Muted("Or use the module directly: go get github.com/egoist/asuka-ds"),
+			ds.Muted("Or use the module directly: go get github.com/egoist/asuka-ds/ds"),
 		),
 		section("2. Create a package",
 			code(`asuka-ds init --dir internal/ds --package ds`),
@@ -222,7 +222,7 @@ asuka-ds version`),
 				Description: "Component sources are embedded in the CLI binary. Installing works offline and does not need a checkout."}),
 		),
 		section("Catalog",
-			ds.Text("The public catalog is internal/catalog/components.json. It is the source of truth for the docs, the CLI and dependency resolution."),
+			ds.Text("The public catalog is internal/catalog/components.json. It names the flat files in ds/ by bare filename, and is the source of truth for the docs, the CLI and dependency resolution."),
 			code(`{
   "kits": {
     "combobox": { "files": ["combobox.go"], "requires": ["overlay"] }
@@ -250,7 +250,7 @@ func qualityPage() ui.Node {
 					{"Unit & component tests", "go test ./...", "76 tests, 9 packages"},
 					{"Static analysis", "go vet ./...", "Pass"},
 					{"Asuka checks", "asuka vet ./...", "Pass"},
-					{"Docs site", "asuka build --platform web site", "Pass"},
+					{"Docs site", "asuka build --platform web website", "Pass"},
 				},
 				Striped: true,
 			}),
@@ -316,8 +316,8 @@ func platformsPage() ui.Node {
 			code(`asuka build --platform mac demo
 asuka build --platform ios --simulator demo
 asuka dev --platform android --once -d emulator-5554 demo
-asuka build --platform web site`),
-			ds.Muted("Screenshots live in docs/screenshots and are named <platform>-<theme>.png."),
+asuka build --platform web website`),
+			ds.Muted("Screenshots live in artwork/screenshots and are named <platform>-<theme>.png."),
 		),
 	)
 }
@@ -331,7 +331,7 @@ func componentPage(d *docs, name string) ui.Node {
 	kit := d.catalog.Kits[component.Kit]
 	var sourceLinks []ui.Node
 	for _, file := range kit.Files {
-		sourceLinks = append(sourceLinks, link(file, "https://github.com/egoist/asuka-ds/blob/main/"+file))
+		sourceLinks = append(sourceLinks, link(file, "https://github.com/egoist/asuka-ds/blob/main/"+catalog.SourceDir+"/"+file))
 	}
 	kids := []ui.Node{
 		ui.Column(ui.Style{Gap: ds.Space2},

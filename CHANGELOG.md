@@ -9,6 +9,13 @@ uses [semantic versioning](https://semver.org/).
 The first product release: a source-owned component library for Asuka, with
 a CLI, an embedded registry and a documentation site.
 
+### Changed
+
+- Library sources now live in `ds/` and the importable package is
+  `github.com/egoist/asuka-ds/ds` (previously the module root). CLI-installed
+  copies are unchanged: `asuka-ds add` still writes flat files into the app's
+  `--dir` with the package name from `--package`.
+
 ### Added
 
 - Typed token layer: `Palette`, `Radii`, `TypeScale`, `Motion` and
@@ -33,7 +40,8 @@ a CLI, an embedded registry and a documentation site.
   to the repository's components.
 - Documentation site built with Asuka itself: guides, token reference, live
   examples and a responsive native menu.
-- Demo apps for desktop and web (`demo`, `demo-form`), plus screenshots.
+- Demo apps for desktop and web (`examples/showcase`, `examples/form`), plus
+  screenshots.
 - Release pipeline: GoReleaser builds macOS, Linux and Windows binaries on a
   `v*` tag, with the version stamped through `-X main.Version`.
 - Cross-platform CI: Windows, Linux and macOS builds, plus a platform

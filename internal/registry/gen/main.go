@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+
+	"github.com/egoist/asuka-ds/internal/catalog"
 )
 
 type manifest struct {
@@ -51,7 +53,7 @@ func main() {
 		fail(err.Error())
 	}
 	for _, name := range names {
-		data, err := os.ReadFile(filepath.Join(root, name))
+		data, err := os.ReadFile(filepath.Join(root, catalog.SourceDir, name))
 		if err != nil {
 			fail(err.Error())
 		}

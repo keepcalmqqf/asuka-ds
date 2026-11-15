@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	ds "github.com/egoist/asuka-ds"
+	ds "github.com/egoist/asuka-ds/ds"
 
 	"github.com/egoist/asuka/app"
 	"github.com/egoist/asuka/signal"

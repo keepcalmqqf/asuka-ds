@@ -20,7 +20,7 @@ func TestCatalogIsConsistent(t *testing.T) {
 			if !strings.HasSuffix(file, ".go") {
 				t.Errorf("kit %q has a non-Go file %q", name, file)
 			}
-			if _, err := os.Stat(filepath.Join("..", "..", file)); err != nil {
+			if _, err := os.Stat(filepath.Join("..", "..", SourceDir, file)); err != nil {
 				t.Errorf("kit %q: %v", name, err)
 			}
 		}

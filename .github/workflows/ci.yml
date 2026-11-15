@@ -37,12 +37,12 @@ jobs:
       - name: Vet Asuka app
         run: asuka vet ./...
       - name: Build docs site
-        run: asuka build --platform web site
+        run: asuka build --platform web website
       - name: Upload site
         uses: actions/upload-artifact@v4
         with:
           name: site
-          path: site/dist/web
+          path: website/dist/web
 
   cross:
     runs-on: ubuntu-latest

@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/egoist/asuka-ds/internal/catalog"
 )
 
 // The embedded copies must match the sources a reader sees in the repo.
@@ -19,7 +21,7 @@ func TestEmbeddedSourcesMatchRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, name := range files {
-		want, err := os.ReadFile(filepath.Join("..", "..", name))
+		want, err := os.ReadFile(filepath.Join("..", "..", catalog.SourceDir, name))
 		if err != nil {
 			t.Fatal(err)
 		}

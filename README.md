@@ -110,7 +110,7 @@ func main() { app.Run(App) }
 | 方式 | 命令 | 适合 |
 |---|---|---|
 | CLI 复制源码 | `asuka-ds add button` | 想完全拥有、修改组件源码的团队 |
-| 模块依赖 | `go get github.com/egoist/asuka-ds` | 想跟随上游升级、不 vendor 的项目 |
+| 模块依赖 | `go get github.com/egoist/asuka-ds/ds` | 想跟随上游升级、不 vendor 的项目 |
 | 直接复制仓库 | `git clone` + copy | 一次性评估或做设计参考 |
 
 CLI 的组件源码内嵌在二进制里，所以 `add` 不需要网络，也不需要 checkout 本仓库。
@@ -157,7 +157,7 @@ gofmt -l .
 go vet ./...
 go test -count=1 ./...
 asuka vet ./...
-asuka build --platform web site
+asuka build --platform web website
 ```
 
 - 76 个测试覆盖组件行为、无障碍、主题 token、目录完整性和 CLI（每个组件的安装路径都有子测试）；
@@ -171,38 +171,41 @@ asuka build --platform web site
 响应式原生菜单：
 
 ```sh
-asuka dev --platform web site
-asuka build --platform web site   # 输出 site/dist/web
+asuka dev --platform web website
+asuka build --platform web website   # 输出 website/dist/web
 ```
 
 两个演示应用：
 
 ```sh
-asuka dev demo          # 桌面（macOS 上是 AppKit 窗口）
-asuka dev --platform web demo-form
+asuka dev examples/showcase          # 桌面（macOS 上是 AppKit 窗口）
+asuka dev --platform web examples/form
 ```
 
 | macOS（Native 深色） | iOS（Native 浅色） | Android（Native 深色） | Web（Neutral 深色） |
 |---|---|---|---|
-| ![](docs/screenshots/macos-native-dark.png) | ![](docs/screenshots/ios-native-light.png) | ![](docs/screenshots/android-native-dark.png) | ![](docs/screenshots/web-neutral-dark.png) |
+| ![](artwork/screenshots/macos-native-dark.png) | ![](artwork/screenshots/ios-native-light.png) | ![](artwork/screenshots/android-native-dark.png) | ![](artwork/screenshots/web-neutral-dark.png) |
 
 平台支持矩阵、验证方式和已知差异见 [docs/platforms.md](docs/platforms.md)；
-更多截图见 [docs/screenshots](docs/screenshots)。
+更多截图见 [artwork/screenshots](artwork/screenshots)。
 
 ## 项目结构
 
 ```text
-*.go                    组件与 token（package ds）
+ds/                     组件与 token（package ds）
 cmd/asuka-ds/           CLI：init / add / list / version
 internal/catalog/       组件目录与 kit 依赖（唯一事实来源）
 internal/registry/      CLI 内嵌的源码快照与 drift 测试
-site/                   文档站
-demo/ demo-form/        演示应用
-docs/                   调研、设计说明、截图
+website/                文档站
+examples/               演示应用（showcase / form）
+docs/                   平台矩阵与调研记录
+DESIGN.md               设计说明
+rfcs/                   里程碑实施计划
+artwork/screenshots/    截图
 ```
 
-新增组件时：写 `.go` → 在 `internal/catalog/components.json` 登记 kit 和
-组件 → `go run ./internal/registry/gen` 同步内嵌源码 → 在 `site/examples.go`
+新增组件时：写 `ds/*.go` → 在 `internal/catalog/components.json` 登记 kit 和
+组件 → `go run ./internal/registry/gen` 同步内嵌源码 → 在 `website/examples.go`
 加预览 → 跑测试。
 
 ## 路线图
@@ -235,12 +238,12 @@ Windows/Linux 交叉编译。
 - 组件 props 在 1.0 前属于预发布 API：新增走 minor，破坏性变更附迁移说明。
 
 细节与上游建议见 [docs/research.md](docs/research.md)，设计说明见
-[docs/superpowers/specs/2026-11-14-asuka-ds-design.md](docs/superpowers/specs/2026-11-14-asuka-ds-design.md)。
+[DESIGN.md](DESIGN.md)。
 
 ## 贡献
 
 ```sh
-go test ./...                    # 组件、主题、CLI、site
+go test ./...                    # 组件、主题、CLI、website
 go run ./internal/registry/gen   # 改了组件源码后同步 registry
 gofmt -l .                       # 应无输出
 ```

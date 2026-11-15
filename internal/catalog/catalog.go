@@ -9,6 +9,10 @@ import (
 	"sort"
 )
 
+// SourceDir is the repository directory holding the component source files
+// that the catalog names by bare filename.
+const SourceDir = "ds"
+
 //go:embed components.json
 var raw []byte
 

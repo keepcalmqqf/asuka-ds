@@ -61,11 +61,11 @@
 
 ## Architecture
 
-- `theme.go`：`Palette`、`Radii`、`TypeScale`、`Motion`、`Elevation`、`Theme.Validate()`、`SetTheme()`、`Themed()`。
+- `ds/theme.go`：`Palette`、`Radii`、`TypeScale`、`Motion`、`Elevation`、`Theme.Validate()`、`SetTheme()`、`Themed()`。
 - `pressable.go`：所有自绘交互的统一语义入口；负责 disabled/selected/expanded hint、事件门控与禁用态透明度。
 - `field.go`：label、description、error 的通用表单语义；错误与描述同时显示，且都进入 accessible name。
 - 组件按职责分文件：`button.go`、`card.go`、`input.go`、`controls.go`、`overlay.go`、`navigation.go`、`display.go`、`command.go`。
-- `demo/`：全组件、双主题、双外观的 showcase；`demo-form/`：表单专项。
+- `examples/showcase/`：全组件、双主题、双外观的 showcase；`examples/form/`：表单专项。
 - `docs/research.md`：一手调研、硬约束、里程碑与风险；本文件：产品边界与已定方案。
 
 ## API Decisions

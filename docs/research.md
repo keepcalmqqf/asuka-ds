@@ -4,7 +4,9 @@
 
 结论先行：**可行，但不能照搬 shadcn 的"纯自绘"路线**。Asuka 的核心卖点是"每个平台用原生控件"，而 shadcn 的核心卖点是"像素完全可控"。两者在按钮、开关、分段控件这类小控件上直接冲突，必须做取舍。建议做一个**双后端的设计系统**：一套 token + 一套 API，组件可以选"原生皮肤"或"自绘皮肤"，并且默认跟随平台。
 
-本文所有结论都在本仓库的原型上跑过：Web（Chromium，明/暗/中性/hover/键盘焦点/390pt）、macOS（AppKit 原生窗口），`asuka build`、`asuka vet` 均通过。M1→M2→M3 的实现与验收记录见 `docs/superpowers/plans/2026-11-14-asuka-ds-m1-m3.md`。
+本文所有结论都在本仓库的原型上跑过：Web（Chromium，明/暗/中性/hover/键盘焦点/390pt）、macOS（AppKit 原生窗口），`asuka build`、`asuka vet` 均通过。M1→M2→M3 的实现与验收记录见 `rfcs/2026-11-14-asuka-ds-m1-m3.md`。
+
+> 本文是调研当时的记录，文中出现的 `demo/`、`demo-form/`、`site/`、`docs/screenshots/`、`docs/superpowers/` 均为旧路径；当前布局分别是 `examples/showcase/`、`examples/form/`、`website/`、`artwork/screenshots/`、`DESIGN.md` 与 `rfcs/`。
 
 ---
 

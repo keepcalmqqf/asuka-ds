@@ -1,7 +1,7 @@
 package main
 
 import (
-	ds "github.com/egoist/asuka-ds"
+	ds "github.com/egoist/asuka-ds/ds"
 	"github.com/egoist/asuka-ds/internal/catalog"
 	"github.com/egoist/asuka/app"
 	"github.com/egoist/asuka/fonts"
