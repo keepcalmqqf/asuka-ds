@@ -1,9 +1,12 @@
 package ds
 
 import (
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/egoist/asuka/host/fake"
 	"github.com/egoist/asuka/ops"
 	"github.com/egoist/asuka/signal"
 	"github.com/egoist/asuka/ui"
@@ -130,5 +133,218 @@ func TestKbdShowsEveryKey(t *testing.T) {
 	a := uitest.Mount(t, func() ui.Node { return Kbd("⌘", "K") })
 	if !a.Has("⌘") || !a.Has("K") {
 		t.Errorf("keycaps are missing:\n%s", a.Snapshot())
+	}
+}
+
+func TestComboboxFiltersAndSelects(t *testing.T) {
+	selected := signal.New("")
+	a := uitest.Mount(t, func() ui.Node {
+		return Combobox(ComboboxProps{
+			Label:       "Framework",
+			Placeholder: "Choose…",
+			Selected:    selected,
+			Items: []ComboboxItem{
+				{Value: "asuka", Title: "Asuka", Keywords: "go native"},
+				{Value: "swiftui", Title: "SwiftUI"},
+				{Value: "compose", Title: "Compose"},
+			},
+		})
+	})
+	a.Tap("Choose…")
+	if !a.Has("SwiftUI") {
+		t.Fatalf("the list did not open:\n%s", a.Snapshot())
+	}
+	a.Type("Search…", "swift")
+	if a.Has("Asuka") || !a.Has("SwiftUI") {
+		t.Fatalf("filtering is wrong:\n%s", a.Snapshot())
+	}
+	a.Tap("SwiftUI")
+	if selected.Peek() != "swiftui" {
+		t.Errorf("selected = %q, want swiftui", selected.Peek())
+	}
+	if !a.Has("SwiftUI") {
+		t.Errorf("the trigger does not show the choice:\n%s", a.Snapshot())
+	}
+}
+
+func TestDateRangePickerUsesTwoNativePickers(t *testing.T) {
+	start := signal.New(time.Time{})
+	end := signal.New(time.Time{})
+	a := uitest.Mount(t, func() ui.Node {
+		return DateRangePicker(DateRangePickerProps{
+			Label: "Billing period", Start: start, End: end,
+		})
+	})
+	if len(a.Host.OfKind(ops.KindDatePicker)) != 2 {
+		t.Fatalf("want two date pickers:\n%s", a.Snapshot())
+	}
+	for _, label := range []string{"Start date", "End date"} {
+		if maybeViewWithLabel(a, label) == nil {
+			t.Errorf("%s has no accessible name:\n%s", label, a.Snapshot())
+		}
+	}
+}
+
+func TestSegmentedControlUsesNativeSegments(t *testing.T) {
+	selected := signal.New(0)
+	a := uitest.Mount(t, func() ui.Node {
+		return SegmentedControl(SegmentedControlProps{
+			Label: "Size", Segments: []string{"Small", "Medium", "Large"},
+			Selected: selected,
+		})
+	})
+	if len(a.Host.OfKind(ops.KindSegmented)) != 1 {
+		t.Fatalf("want one segmented control:\n%s", a.Snapshot())
+	}
+	a.Select("Large")
+	if selected.Peek() != 2 {
+		t.Errorf("selected = %d, want 2", selected.Peek())
+	}
+}
+
+func TestMenuSupportsSectionsAndSubmenus(t *testing.T) {
+	a := uitest.Mount(t, func() ui.Node {
+		return Menu(MenuProps{Label: "Actions", Items: []DialogAction{
+			{Title: "Edit", Children: []DialogAction{{Title: "Copy"}}},
+			{Title: "Danger", Inline: true, Children: []DialogAction{{Title: "Delete"}}},
+		}})
+	})
+	var menu *fake.View
+	for _, v := range a.Host.Views {
+		if _, ok := v.Props[ops.PropMenu]; ok {
+			menu = v
+		}
+	}
+	if menu == nil {
+		t.Fatalf("menu trigger has no menu prop:\n%s", a.Snapshot())
+	}
+	items := ops.DecodeActions(menu.Props[ops.PropMenu].Bytes)
+	if len(items) != 2 {
+		t.Fatalf("items = %d, want 2", len(items))
+	}
+	if !items[0].Is(ops.MenuSubmenu) || len(items[0].Items) != 1 ||
+		items[0].Items[0].Title != "Copy" {
+		t.Errorf("Edit is not a submenu with Copy: %+v", items[0])
+	}
+	if !items[1].Is(ops.MenuInline) {
+		t.Errorf("Danger is not an inline section: %+v", items[1])
+	}
+}
+
+func TestToggleWritesItsSignal(t *testing.T) {
+	pressed := signal.New(false)
+	a := uitest.Mount(t, func() ui.Node {
+		return Toggle(ToggleProps{Text: "Bold", Pressed: pressed})
+	})
+	a.Tap("Bold")
+	if !pressed.Peek() {
+		t.Fatal("toggle did not write its signal")
+	}
+	if got := viewWithLabel(a, "Bold").String(ops.PropA11yHint); got != "Selected" {
+		t.Errorf("hint = %q, want Selected", got)
+	}
+}
+
+func TestToggleGroupMultiple(t *testing.T) {
+	selected := signal.NewFunc([]string{}, slices.Equal)
+	a := uitest.Mount(t, func() ui.Node {
+		return ToggleGroup(ToggleGroupProps{
+			Label: "Formatting",
+			Items: []ToggleItem{
+				{Value: "bold", Label: "Bold"},
+				{Value: "italic", Label: "Italic"},
+			},
+			Selected: selected,
+		})
+	})
+	a.Tap("Bold")
+	a.Tap("Italic")
+	if got := selected.Peek(); len(got) != 2 || got[0] != "bold" || got[1] != "italic" {
+		t.Errorf("selected = %v, want [bold italic]", got)
+	}
+	a.Tap("Bold")
+	if got := selected.Peek(); len(got) != 1 || got[0] != "italic" {
+		t.Errorf("selected after deselect = %v, want [italic]", got)
+	}
+}
+
+func TestToggleGroupSingleKeepsOne(t *testing.T) {
+	selected := signal.NewFunc([]string{}, slices.Equal)
+	a := uitest.Mount(t, func() ui.Node {
+		return ToggleGroup(ToggleGroupProps{
+			Label: "Align", Single: true,
+			Items: []ToggleItem{
+				{Value: "left", Label: "Left"},
+				{Value: "right", Label: "Right"},
+			},
+			Selected: selected,
+		})
+	})
+	a.Tap("Left")
+	a.Tap("Right")
+	if got := selected.Peek(); len(got) != 1 || got[0] != "right" {
+		t.Errorf("selected = %v, want [right]", got)
+	}
+	a.Tap("Right")
+	if got := selected.Peek(); len(got) != 0 {
+		t.Errorf("selected after deselect = %v, want []", got)
+	}
+}
+
+func TestNumberFieldUsesNativeStepper(t *testing.T) {
+	value := signal.New(3.0)
+	a := uitest.Mount(t, func() ui.Node {
+		return NumberField(NumberFieldProps{Label: "Seats", Value: value, Min: 1, Max: 10})
+	})
+	if len(a.Host.OfKind(ops.KindStepper)) != 1 {
+		t.Fatalf("want one stepper:\n%s", a.Snapshot())
+	}
+	if !a.Has("3") {
+		t.Errorf("value is not shown:\n%s", a.Snapshot())
+	}
+	value.Set(4)
+	a.Settle()
+	if !a.Has("4") {
+		t.Errorf("value did not follow the signal:\n%s", a.Snapshot())
+	}
+}
+
+func TestDataTableSortsAndPressesRows(t *testing.T) {
+	sortColumn := signal.New(-1)
+	descending := signal.New(false)
+	pressed := -1
+	a := uitest.Mount(t, func() ui.Node {
+		return DataTable(DataTableProps{
+			Columns: []DataTableColumn{
+				{Title: "Name", Sortable: true},
+				{Title: "Role"},
+			},
+			Rows: [][]string{
+				{"Grace", "Admiral"},
+				{"Ada", "Engineer"},
+			},
+			Sort: sortColumn, Descending: descending,
+			OnRowPress: func(index int) { pressed = index },
+		})
+	})
+	a.Tap("Ada, Engineer")
+	if pressed != 1 {
+		t.Errorf("pressed row = %d, want 1", pressed)
+	}
+	a.Tap("Sort by Name")
+	if sortColumn.Peek() != 0 || descending.Peek() {
+		t.Fatalf("sort = %d descending = %v", sortColumn.Peek(), descending.Peek())
+	}
+	snap := a.Snapshot()
+	if strings.Index(snap, "Ada") > strings.Index(snap, "Grace") {
+		t.Errorf("rows are not ascending:\n%s", snap)
+	}
+	a.Tap("Sort by Name, ascending")
+	if !descending.Peek() {
+		t.Fatal("second press did not reverse the order")
+	}
+	snap = a.Snapshot()
+	if strings.Index(snap, "Grace") > strings.Index(snap, "Ada") {
+		t.Errorf("rows are not descending:\n%s", snap)
 	}
 }

@@ -1,4 +1,4 @@
-module asuka-ds
+module github.com/egoist/asuka-ds
 
 go 1.26.0
 

@@ -13,6 +13,11 @@ type DialogAction struct {
 	Disabled signal.Accessor[bool]
 	Checked  signal.Accessor[bool]
 	OnPress  func()
+	// Children makes the item a submenu, opened when it is chosen.
+	Children []DialogAction
+	// Inline shows Children in place as a section with dividers, under
+	// the title, instead of in a submenu. Dialog ignores both fields.
+	Inline bool
 }
 
 // DialogProps configures a Dialog.
@@ -146,14 +151,7 @@ type MenuProps struct {
 func Menu(p MenuProps, children ...ui.Node) ui.Node {
 	actions := make([]ui.Action, 0, len(p.Items))
 	for _, a := range p.Items {
-		actions = append(actions, ui.Action{
-			Title:    ui.Val(a.Title),
-			Icon:     a.Icon,
-			Role:     a.Role,
-			Disabled: a.Disabled,
-			Checked:  a.Checked,
-			OnPress:  a.OnPress,
-		})
+		actions = append(actions, menuAction(a))
 	}
 	trigger := ui.View(ui.ViewProps{
 		Label: ui.Val(p.Label),
@@ -176,6 +174,25 @@ func Menu(p MenuProps, children ...ui.Node) ui.Node {
 		return trigger
 	}
 	return ui.Menu(ui.MenuProps{Actions: actions, Style: ui.Style{}}, trigger)
+}
+
+// menuAction converts a DialogAction, and its children, to the native
+// menu's Action. Submenus and sections are the platform's own, so nested
+// menus keep keyboard navigation and disabled/checked items for free.
+func menuAction(a DialogAction) ui.Action {
+	action := ui.Action{
+		Title:    ui.Val(a.Title),
+		Icon:     a.Icon,
+		Role:     a.Role,
+		Disabled: a.Disabled,
+		Checked:  a.Checked,
+		OnPress:  a.OnPress,
+		Inline:   a.Inline,
+	}
+	for _, child := range a.Children {
+		action.Children = append(action.Children, menuAction(child))
+	}
+	return action
 }
 
 // Toast shows the platform's snackbar/toast. It is a function, not a

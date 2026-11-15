@@ -124,35 +124,34 @@ func Command(p CommandProps) ui.Node {
 		}
 	}
 
-	field := ui.TextField(ui.TextFieldProps{
-		Value:       query,
-		Placeholder: ui.Val(placeholder),
-		Plain:       true,
-		Keys: ui.KeyMap{
-			{Key: "down"}: func() {
-				if selected.Peek() < len(signal.Untrack(matches.Get))-1 {
-					selected.Set(selected.Peek() + 1)
-				}
-			},
-			{Key: "up"}: func() {
-				if selected.Peek() > 0 {
-					selected.Set(selected.Peek() - 1)
-				}
-			},
-			{Key: "enter"}:  choose,
-			{Key: "escape"}: func() { open.Set(false) },
-		},
-		Style: themed(func(t Theme, c Palette) ui.Style {
-			return ui.Style{Font: t.Type.Body, Color: c.Foreground, Width: ui.Pct(100)}
-		}),
-	})
-
 	trigger := Button(ButtonProps{
 		Text: placeholder, Icon: ui.IconSearch, Variant: Outline,
 		OnPress: func() { open.Set(true) },
 	})
 
 	content := func() ui.Node {
+		field := ui.TextField(ui.TextFieldProps{
+			Value:       query,
+			Placeholder: ui.Val(placeholder),
+			Plain:       true,
+			Keys: ui.KeyMap{
+				{Key: "down"}: func() {
+					if selected.Peek() < len(signal.Untrack(matches.Get))-1 {
+						selected.Set(selected.Peek() + 1)
+					}
+				},
+				{Key: "up"}: func() {
+					if selected.Peek() > 0 {
+						selected.Set(selected.Peek() - 1)
+					}
+				},
+				{Key: "enter"}:  choose,
+				{Key: "escape"}: func() { open.Set(false) },
+			},
+			Style: themed(func(t Theme, c Palette) ui.Style {
+				return ui.Style{Font: t.Type.Body, Color: c.Foreground, Width: ui.Pct(100)}
+			}),
+		})
 		return ui.Column(ui.Style{Gap: Space3, Width: ui.Pct(100), MinWidth: ui.Pt(320)},
 			ui.View(ui.ViewProps{Style: themed(func(t Theme, c Palette) ui.Style {
 				return ui.Style{Padding: ui.Symmetric(Space3, Space4), BorderWidth: 1,

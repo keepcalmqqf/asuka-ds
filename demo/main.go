@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
-	ds "asuka-ds"
+	ds "github.com/egoist/asuka-ds"
 
 	"github.com/egoist/asuka/app"
 	"github.com/egoist/asuka/signal"
@@ -28,6 +29,15 @@ func App() ui.Node {
 	volume := signal.New(0.62)
 	page := signal.New(3)
 	start := signal.New(time.Now())
+	rangeStart := signal.New(time.Now())
+	rangeEnd := signal.New(time.Now().AddDate(0, 0, 30))
+	density := signal.New(1)
+	frameworkName := signal.New("")
+	seats := signal.New(3.0)
+	bold := signal.New(false)
+	formatting := signal.NewFunc([]string{"bold"}, slices.Equal)
+	tableSort := signal.New(-1)
+	tableDescending := signal.New(false)
 	accordion := signal.New(0)
 	sheetOpen := signal.New(false)
 
@@ -70,6 +80,8 @@ func App() ui.Node {
 				ds.Button(ds.ButtonProps{Text: "With icon", Icon: ui.IconPlus, Variant: ds.Outline, OnPress: func() {}}),
 				ds.Button(ds.ButtonProps{Icon: ui.IconMore, Size: ds.IconOnly, Variant: ds.Ghost, Label: "More options", OnPress: func() {}}),
 				ds.Button(ds.ButtonProps{Text: "Disabled", Variant: ds.Primary, Disabled: true}),
+				ds.Toggle(ds.ToggleProps{Text: "Bold", Pressed: bold, Variant: ds.Outline}),
+				ds.Toggle(ds.ToggleProps{Icon: ui.IconStar, Label: "Star", Pressed: bold, Variant: ds.Ghost}),
 			),
 			ds.Card(ds.CardProps{}, ui.Column(ui.Style{Gap: ds.Space3},
 				ds.CardHeader("Native or drawn?", "The same props, two implementations."),
@@ -103,8 +115,12 @@ func App() ui.Node {
 						Placeholder: "A few words about you"}),
 					ds.Input(ds.InputProps{Value: workspace, Label: "Workspace", Placeholder: "acme", Disabled: true,
 						Description: "Ask an admin to change it."}),
+					ds.NumberField(ds.NumberFieldProps{Label: "Seats", Value: seats, Min: 1, Max: 20,
+						Description: "How many people can join."}),
 					ds.DatePicker(ds.DatePickerProps{Label: "Start date", Value: start,
 						Description: "The platform's own picker."}),
+					ds.DateRangePicker(ds.DateRangePickerProps{Label: "Billing period",
+						Start: rangeStart, End: rangeEnd, Description: "End can't precede start."}),
 					ui.View(ui.ViewProps{Label: ui.Val("Email notifications")},
 						ui.Row(ui.Style{Gap: ds.Space3, Align: ui.AlignCenter},
 							ui.Toggle(ui.ToggleProps{Value: notify}),
@@ -197,6 +213,21 @@ func App() ui.Node {
 							Selected: plan, Description: "Change at any time."}),
 						ds.Select(ds.SelectProps{Label: "Framework", Options: []string{"Asuka", "SwiftUI", "Compose"},
 							Selected: framework, Placeholder: "Choose…"}),
+						ds.Combobox(ds.ComboboxProps{Label: "Preferred framework", Placeholder: "Search frameworks…",
+							Selected: frameworkName,
+							Items: []ds.ComboboxItem{
+								{Value: "asuka", Title: "Asuka", Subtitle: "Go, native widgets", Icon: ui.IconStar},
+								{Value: "swiftui", Title: "SwiftUI", Subtitle: "Apple platforms"},
+								{Value: "compose", Title: "Compose", Subtitle: "Android"},
+							}}),
+						ds.SegmentedControl(ds.SegmentedControlProps{Label: "Density",
+							Segments: []string{"Compact", "Regular", "Comfortable"}, Selected: density}),
+						ds.ToggleGroup(ds.ToggleGroupProps{Label: "Formatting", Selected: formatting,
+							Items: []ds.ToggleItem{
+								{Value: "bold", Label: "Bold"},
+								{Value: "italic", Label: "Italic"},
+								{Value: "code", Label: "Code", Icon: ui.IconDocument},
+							}}),
 						ds.Slider(ds.SliderProps{Label: "Volume", Value: volume, Min: 0, Max: 1}),
 					),
 				),
@@ -252,14 +283,19 @@ func App() ui.Node {
 					),
 				),
 				ui.View(ui.ViewProps{Style: ui.Style{Grow: 1, Basis: ui.Pt(360)}},
-					ds.Table(ds.TableProps{
-						Columns: []ds.TableColumn{{Title: "Name", Width: 2}, {Title: "Role"}, {Title: "Status"}},
+					ds.DataTable(ds.DataTableProps{
+						Columns: []ds.DataTableColumn{
+							{Title: "Name", Width: 2, Sortable: true},
+							{Title: "Role", Sortable: true},
+							{Title: "Status"},
+						},
 						Rows: [][]string{
 							{"Ada Lovelace", "Engineer", "Active"},
 							{"Grace Hopper", "Admiral", "Active"},
 							{"Alan Turing", "Researcher", "Away"},
 						},
-						Striped: true,
+						Sort: tableSort, Descending: tableDescending, Striped: true,
+						OnRowPress: func(index int) { fmt.Println("row", index) },
 					}),
 				),
 			),

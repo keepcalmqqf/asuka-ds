@@ -1,35 +1,80 @@
 # Asuka DS
 
-一个跑在 [Asuka](https://asuka.egoist.dev) 上的 Design System 原型：shadcn/ui 的 token 结构与组件形态，加上 Asuka 的原生控件与细粒度更新。
+> 跑在 [Asuka](https://asuka.egoist.dev) 上的、源码可拥有的组件库。
 
-> 调研结论、可行性边界、路线图见 [docs/research.md](docs/research.md)。
+`Go 1.26+` · `Asuka 0.1.1` · `43 个组件` · `76 个测试` · `MIT`
 
-## 它长什么样
+Asuka DS 把 shadcn/ui 的 token 结构与组合方式带到 Go：同一套强类型主题、
+可复制的组件源码，以及 Asuka 的原生控件和细粒度更新。它不是一个锁定你的
+运行时——CLI 把组件源码复制进你的仓库，代码从此归你所有。
 
-同一份 Go 代码，三种外观：
+## 为什么是它
 
-| Native 主题（Web） | Neutral 主题（Web） | macOS 原生 |
+- **原生优先**：按钮、输入框、选择器、弹层在关键路径上使用平台自己的控件，
+  输入法、选区、焦点、键盘和读屏行为都由平台负责。
+- **源码可拥有**：`asuka-ds add` 只复制普通 Go 文件，没有生成的运行时、
+  没有隐藏的依赖注入。改代码、改 API、整体 vendor 都可以。
+- **token 是结构体**：`Palette`、`Radii`、`TypeScale`、`Motion` 都是强类型，
+  能做 WCAG 对比度计算，不散落十六进制。
+- **主题是 signal**：`SetTheme` / `SetAppearance` 实时换肤，不重建页面。
+- **一个 API，两种质感**：自绘组件保证品牌一致，原生组件保证平台手感。
+
+## Native 与 Neutral 的区别
+
+两个主题共用同一套组件 API，差别只在颜色的来源和平台差异的取舍：
+
+| | `ds.Native()` | `ds.Neutral()` |
 |---|---|---|
-| ![](docs/screenshots/web-focus-ring.png) | ![](docs/screenshots/web-neutral-dark.png) | ![](docs/screenshots/macos-native-dark.png) |
+| 颜色来源 | 平台语义色（`colors.*`） | shadcn zinc 明/暗两套十六进制 |
+| 深色模式 | 跟随系统，也跟随系统对比度 | 跟随 `SetAppearance` 的显式 Light/Dark |
+| 平台差异 | 保留：iOS 蓝、Material 动态色、Windows accent | 抹平：六个平台同一张脸 |
+| 无障碍 | 由平台语义色保证 | 由 `Theme.Validate` 做 WCAG 2.1 AA 校验 |
+| 适合 | 系统集成、原生质感、跟随用户设置 | 品牌一致性、跨端截图、营销页面 |
+
+```go
+ds.SetTheme(ds.Native())   // 像系统应用
+ds.SetTheme(ds.Neutral())  // 像 shadcn
+ds.SetAppearance(ui.ColorSchemeDark)
+```
+
+`Native` 在 `System` 下使用平台语义色；强制 Light/Dark 时改用内置近似色，
+保证换肤不依赖宿主回环（macOS 要等窗口重绘才回报新的 appearance）。
 
 ## 快速开始
 
-```sh
-go install github.com/egoist/asuka/cmd/asuka@latest
+### 1. 安装 CLI
 
-asuka dev demo                  # 本机运行（macOS 上是 AppKit 窗口）
-asuka dev --platform web demo   # 浏览器
-asuka build --platform web demo # 静态站点
-asuka vet ./...
+```sh
+go install github.com/egoist/asuka-ds/cmd/asuka-ds@latest
 ```
 
-## 用法
+### 2. 初始化一个包
+
+```sh
+asuka-ds init --dir internal/ds --package ds
+```
+
+`init` 写入基础层：主题、文本、`Pressable`、`Field` 和共享的 variant 词汇，
+不包含任何具体组件。
+
+### 3. 按需添加组件
+
+```sh
+asuka-ds add button input card list
+asuka-ds add date-range-picker --dir internal/ds
+asuka-ds list
+```
+
+依赖会自动解析：`add switch` 会一并安装 `overlay.go`，`add command` 会安装
+`button.go`。已存在的文件默认不覆盖，只有显式 `--force` 才会覆盖。
+
+### 4. 使用
 
 ```go
 package main
 
 import (
-	ds "asuka-ds"
+	ds "example.com/app/internal/ds"
 
 	"github.com/egoist/asuka/app"
 	"github.com/egoist/asuka/signal"
@@ -60,54 +105,149 @@ func App() ui.Node {
 func main() { app.Run(App) }
 ```
 
-## 设计原则
+## 三种使用方式
 
-- **零值可用**：`ds.Button(ds.ButtonProps{Text: "Save"})` 就是主按钮中号。
-- **两种皮肤，一套 API**：`ds.Button` 自绘（品牌一致），`ds.NativeButton` 用平台按钮（手感/无障碍最佳）。`ds.Input` 永远是「原生输入框 + DS 外壳」。
-- **token 是结构体**：`Palette` / `Radii` / `TypeScale` 都是强类型，能做对比度计算，不散落十六进制。
-- **主题是 signal**：`ds.SetTheme(ds.Neutral())` 实时换肤，不重建页面。
-- **逃生口**：`ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style { ... })`，用户写的样式也参与换肤。
-
-## 内置主题
-
-| 主题 | 颜色来源 | 适合 |
+| 方式 | 命令 | 适合 |
 |---|---|---|
-| `ds.Native()` | 平台语义色（`colors.*`） | 跟随系统深色/对比度/Android 动态色，最像原生应用 |
-| `ds.Neutral()` | shadcn zinc 明/暗两套 | 六个平台同一张脸，品牌优先 |
+| CLI 复制源码 | `asuka-ds add button` | 想完全拥有、修改组件源码的团队 |
+| 模块依赖 | `go get github.com/egoist/asuka-ds` | 想跟随上游升级、不 vendor 的项目 |
+| 直接复制仓库 | `git clone` + copy | 一次性评估或做设计参考 |
 
-```go
-ds.SetTheme(ds.Neutral())
-ds.SetAppearance(ui.ColorSchemeDark)
-```
+CLI 的组件源码内嵌在二进制里，所以 `add` 不需要网络，也不需要 checkout 本仓库。
 
-`SetAppearance` 同时设置宿主的外观和 DS 内部的外观信号：自绘组件在点击时立即换用对应明暗调色板，不必等宿主把新的 `Dark` 环境回传（macOS 上这一步要等窗口自己的重绘）。`Native` 在 `System` 下仍使用平台语义色；强制 Light/Dark 时改用内置的明暗近似色，保证换肤不依赖宿主回环。
-
-## 里程碑
-
-| 阶段 | 状态 | 交付 |
-|---|---|---|
-| M0 原型 | ✅ | token、双主题、基础组件、Web/macOS 演示 |
-| M1 基础设施 | ✅ | `Theme`/`Palette`/`Radii`/`TypeScale`/`Motion`/`Elevation`、WCAG 校验、实时换肤 |
-| M2 原语与无障碍 | ✅ | `Pressable`、`Field`、`Overlay`、`Menu`、动态状态语义、29 个 `uitest` |
-| M3 组件扩充 | ✅ | 表单、导航、数据展示、反馈、命令面板与两个 demo |
-| M4 分发与文档 | 待办 | registry + `asuka-ds add`、正式文档站 |
-| M5 质量 | 待办 | 六平台截图快照、CI、真机走查 |
-
-设计边界与方案见 [设计说明](docs/superpowers/specs/2026-11-14-asuka-ds-design.md)，里程碑验收计划见 [实施计划](docs/superpowers/plans/2026-11-14-asuka-ds-m1-m3.md)。
-
-## 组件
+## 组件目录（43）
 
 | 类别 | 组件 |
 |---|---|
-| Surface | `Card` 系列、`Badge`、`Separator`、`Skeleton`、`Alert`、`Avatar`、`Progress`、`Spinner`、`Table`、`EmptyState` |
-| Form | `Input`、`Textarea`、`DatePicker`、`Field`、`Switch`/Checkbox、`RadioGroup`、`Select`、`Slider`、`Command` |
-| Navigation | `Tabs`、`Accordion`、`Breadcrumb`、`Pagination` |
-| Overlay | `Dialog`、`ConfirmDialog`、`Overlay`、`Menu`、`Toast`、`Tooltip` |
-| Typography | `Heading`、`Title`、`Text`、`Muted`、`Kbd`、`Screen` |
-| Button | `Button` / `NativeButton`：6 变体 × 4 尺寸 |
+| Button (1) | `Button` / `NativeButton`：6 变体 × 4 尺寸 |
+| Form (16) | `Input`、`Textarea`、`NumberField`、`DatePicker`、`DateRangePicker`、`Switch`、`Checkbox`、`RadioGroup`、`Select`、`Combobox`、`SegmentedControl`、`Slider`、`Toggle`、`ToggleGroup`、`Command`、`ColorPicker` |
+| Navigation (4) | `Tabs`、`Accordion`、`Breadcrumb`、`Pagination` |
+| Overlay (5) | `Dialog`、`ConfirmDialog`、`Menu`、`Popover`、`Toast` |
+| Data display (8) | `Card` 系列、`Badge`、`Avatar`、`Table`、`DataTable`、`List` / `ListItem`、`Stat`、`EmptyState` |
+| Feedback (6) | `Alert`、`Progress`、`ProgressRing`、`Spinner`、`Skeleton`、`Tooltip` |
+| Typography (3) | `Heading`、`Text` / `Muted` / `Title`、`Kbd` |
 
-`Pressable` 是所有自绘交互的统一入口：disabled、selected、expanded 通过动态 `Hint` 与事件门控表达；原生控件则直接使用平台自己的 disabled/checked 语义。
+`Pressable` 是所有自绘交互的统一入口：disabled、selected、expanded 通过动态
+`Hint` 与事件门控表达；原生控件则直接使用平台自己的 disabled/checked 语义。
+
+## 主题与 token
+
+```go
+theme := ds.Neutral()
+if problems := theme.Validate(); len(problems) > 0 {
+	log.Fatal(problems) // 缺少角色，或对比度低于 WCAG AA
+}
+
+ds.SetTheme(theme)
+ds.SetAppearance(ui.ColorSchemeSystem)
+```
+
+自绘组件通过 `ds.Themed` 读取主题，用户写的样式也参与实时换肤：
+
+```go
+ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+	return ui.Style{Background: c.Elevation2.Overlay, CornerRadius: t.Radii.LG}
+})
+```
+
+## 质量
+
+```sh
+gofmt -l .
+go vet ./...
+go test -count=1 ./...
+asuka vet ./...
+asuka build --platform web site
+```
+
+- 76 个测试覆盖组件行为、无障碍、主题 token、目录完整性和 CLI（每个组件的安装路径都有子测试）；
+- `Theme.Validate` 检查每个色板的角色完整性与 WCAG 2.1 AA 对比度；
+- 内嵌 registry 有 drift 测试：仓库组件与 CLI 分发的源码必须逐字节一致；
+- CI 同时跑 Go 测试、`asuka vet` 和文档站的 Web 构建。
+
+## 文档站与演示
+
+文档站本身用 Asuka DS 构建，包含指南、token 参考、43 个组件的实时预览和
+响应式原生菜单：
+
+```sh
+asuka dev --platform web site
+asuka build --platform web site   # 输出 site/dist/web
+```
+
+两个演示应用：
+
+```sh
+asuka dev demo          # 桌面（macOS 上是 AppKit 窗口）
+asuka dev --platform web demo-form
+```
+
+| macOS（Native 深色） | iOS（Native 浅色） | Android（Native 深色） | Web（Neutral 深色） |
+|---|---|---|---|
+| ![](docs/screenshots/macos-native-dark.png) | ![](docs/screenshots/ios-native-light.png) | ![](docs/screenshots/android-native-dark.png) | ![](docs/screenshots/web-neutral-dark.png) |
+
+平台支持矩阵、验证方式和已知差异见 [docs/platforms.md](docs/platforms.md)；
+更多截图见 [docs/screenshots](docs/screenshots)。
+
+## 项目结构
+
+```text
+*.go                    组件与 token（package ds）
+cmd/asuka-ds/           CLI：init / add / list / version
+internal/catalog/       组件目录与 kit 依赖（唯一事实来源）
+internal/registry/      CLI 内嵌的源码快照与 drift 测试
+site/                   文档站
+demo/ demo-form/        演示应用
+docs/                   调研、设计说明、截图
+```
+
+新增组件时：写 `.go` → 在 `internal/catalog/components.json` 登记 kit 和
+组件 → `go run ./internal/registry/gen` 同步内嵌源码 → 在 `site/examples.go`
+加预览 → 跑测试。
+
+## 路线图
+
+| 阶段 | 状态 | 交付 |
+|---|---|---|
+| M0–M3 | ✅ | token、双主题、原语、43 个组件、两个 demo |
+| M4 | ✅ | registry、CLI、文档站、模块身份 |
+| M5 | 进行中 | 发布流水线 ✅；macOS/Web/iOS/Android 已验证；Windows/Linux 待真机 |
+
+## 发布
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+标签触发 [release.yml](.github/workflows/release.yml)：GoReleaser 用
+`-X main.Version` 写入版本，构建 macOS、Linux、Windows 的 amd64/arm64
+二进制和校验文件，并创建 GitHub Release。CI 还会对同一份代码做
+Windows/Linux 交叉编译。
 
 ## 已知边界
 
-Asuka 的原生控件不能深度换肤；自绘控件没有 `Disabled` / selected / expanded trait。当前用 `Pressable` 的 `Hint` 兜底，关键路径仍建议用 `NativeButton` 或其他原生控件。细节与上游建议见 [docs/research.md §3、§6、§9](docs/research.md)。
+- Asuka 的原生控件不能深度换肤；DS 负责外壳、标签和 token。
+- iOS 上容器的 `Color` 就是 tint，语义 accent 背景会按 tint 解析；自绘组件
+  只给文字和图标上色，不给带 accent 背景的容器上色（已有回归测试）。
+- 自绘控件没有原生 `Disabled` / selected / expanded trait，当前用 `Pressable`
+  的 `Hint` 与事件门控兜底；关键路径仍建议用 `NativeButton` 等原生控件。
+- 组件 props 在 1.0 前属于预发布 API：新增走 minor，破坏性变更附迁移说明。
+
+细节与上游建议见 [docs/research.md](docs/research.md)，设计说明见
+[docs/superpowers/specs/2026-11-14-asuka-ds-design.md](docs/superpowers/specs/2026-11-14-asuka-ds-design.md)。
+
+## 贡献
+
+```sh
+go test ./...                    # 组件、主题、CLI、site
+go run ./internal/registry/gen   # 改了组件源码后同步 registry
+gofmt -l .                       # 应无输出
+```
+
+提交前请保持 `go vet ./...` 与 `asuka vet ./...` 通过，并在 PR 里说明组件行为
+或 token 的变化。
+
+## License
+
+[MIT](LICENSE)

@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	ds "asuka-ds"
+	ds "github.com/egoist/asuka-ds"
 
 	"github.com/egoist/asuka/ops"
 	"github.com/egoist/asuka/signal"

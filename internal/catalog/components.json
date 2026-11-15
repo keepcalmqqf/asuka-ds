@@ -1,0 +1,384 @@
+{
+  "kits": {
+    "base": {
+      "files": ["theme.go", "text.go", "pressable.go", "field.go", "variant.go"],
+      "requires": []
+    },
+    "button": {
+      "files": ["button.go"],
+      "requires": ["base"]
+    },
+    "card": {
+      "files": ["card.go"],
+      "requires": ["base"]
+    },
+    "badge": {
+      "files": ["badge.go"],
+      "requires": ["base"]
+    },
+    "input": {
+      "files": ["input.go"],
+      "requires": ["base"]
+    },
+    "textarea": {
+      "files": ["textarea.go"],
+      "requires": ["input"]
+    },
+    "controls": {
+      "files": ["controls.go"],
+      "requires": ["overlay"]
+    },
+    "overlay": {
+      "files": ["overlay.go"],
+      "requires": ["base"]
+    },
+    "command": {
+      "files": ["command.go"],
+      "requires": ["overlay", "button"]
+    },
+    "navigation": {
+      "files": ["navigation.go"],
+      "requires": ["base"]
+    },
+    "display": {
+      "files": ["display.go"],
+      "requires": ["base"]
+    },
+    "tabs": {
+      "files": ["tabs.go"],
+      "requires": ["base"]
+    },
+    "breadcrumb": {
+      "files": ["breadcrumb.go"],
+      "requires": ["base"]
+    },
+    "pagination": {
+      "files": ["pagination.go"],
+      "requires": ["base"]
+    },
+    "spinner": {
+      "files": ["spinner.go"],
+      "requires": ["base"]
+    },
+    "empty": {
+      "files": ["empty.go"],
+      "requires": ["base"]
+    },
+    "kbd": {
+      "files": ["kbd.go"],
+      "requires": ["base"]
+    },
+    "datepicker": {
+      "files": ["datepicker.go"],
+      "requires": ["base"]
+    },
+    "daterange": {
+      "files": ["daterange.go"],
+      "requires": ["datepicker"]
+    },
+    "segmented": {
+      "files": ["segmented.go"],
+      "requires": ["base"]
+    },
+    "combobox": {
+      "files": ["combobox.go"],
+      "requires": ["overlay"]
+    },
+    "datatable": {
+      "files": ["datatable.go"],
+      "requires": ["base"]
+    },
+    "toggle": {
+      "files": ["toggle.go"],
+      "requires": ["base"]
+    },
+    "togglegroup": {
+      "files": ["togglegroup.go"],
+      "requires": ["base"]
+    },
+    "numberfield": {
+      "files": ["numberfield.go"],
+      "requires": ["base"]
+    },
+    "popover": {
+      "files": ["popover.go"],
+      "requires": ["base"]
+    },
+    "list": {
+      "files": ["list.go"],
+      "requires": ["base"]
+    },
+    "stat": {
+      "files": ["stat.go"],
+      "requires": ["base"]
+    },
+    "progressring": {
+      "files": ["progressring.go"],
+      "requires": ["base"]
+    },
+    "colorpicker": {
+      "files": ["colorpicker.go"],
+      "requires": ["base"]
+    }
+  },
+  "components": {
+    "button": {
+      "title": "Button",
+      "category": "Button",
+      "kit": "button",
+      "description": "Drawn and native buttons: six variants, four sizes, disabled and href."
+    },
+    "input": {
+      "title": "Input",
+      "category": "Form",
+      "kit": "input",
+      "description": "A native text field in the design system's border, label, description and error."
+    },
+    "textarea": {
+      "title": "Textarea",
+      "category": "Form",
+      "kit": "textarea",
+      "description": "A multi-line input with the same field semantics."
+    },
+    "number-field": {
+      "title": "Number Field",
+      "category": "Form",
+      "kit": "numberfield",
+      "description": "A value beside the platform stepper, with bounds and a step."
+    },
+    "date-picker": {
+      "title": "Date Picker",
+      "category": "Form",
+      "kit": "datepicker",
+      "description": "The platform's date, time or date-and-time picker in a Field."
+    },
+    "date-range-picker": {
+      "title": "Date Range Picker",
+      "category": "Form",
+      "kit": "daterange",
+      "description": "Two native pickers with the range enforced between them."
+    },
+    "switch": {
+      "title": "Switch",
+      "category": "Form",
+      "kit": "controls",
+      "description": "A native switch or checkbox with a themed label and description."
+    },
+    "checkbox": {
+      "title": "Checkbox",
+      "category": "Form",
+      "kit": "controls",
+      "description": "The native checkbox form of Switch."
+    },
+    "radio-group": {
+      "title": "Radio Group",
+      "category": "Form",
+      "kit": "controls",
+      "description": "Exclusive choices drawn from Pressables, announced with Selected."
+    },
+    "select": {
+      "title": "Select",
+      "category": "Form",
+      "kit": "controls",
+      "description": "A themed trigger over the platform's own menu."
+    },
+    "combobox": {
+      "title": "Combobox",
+      "category": "Form",
+      "kit": "combobox",
+      "description": "A searchable select: a native search field and a keyboard-navigable list."
+    },
+    "segmented-control": {
+      "title": "Segmented Control",
+      "category": "Form",
+      "kit": "segmented",
+      "description": "The platform's segmented control in a Field."
+    },
+    "slider": {
+      "title": "Slider",
+      "category": "Form",
+      "kit": "controls",
+      "description": "The platform slider with a themed label and live value."
+    },
+    "toggle": {
+      "title": "Toggle",
+      "category": "Form",
+      "kit": "toggle",
+      "description": "A button that stays pressed."
+    },
+    "toggle-group": {
+      "title": "Toggle Group",
+      "category": "Form",
+      "kit": "togglegroup",
+      "description": "A single- or multi-select row of Toggles."
+    },
+    "command": {
+      "title": "Command",
+      "category": "Form",
+      "kit": "command",
+      "description": "A searchable command palette with keyboard selection."
+    },
+    "color-picker": {
+      "title": "Color Picker",
+      "category": "Form",
+      "kit": "colorpicker",
+      "description": "A labeled swatch that opens the platform's color picker."
+    },
+    "tabs": {
+      "title": "Tabs",
+      "category": "Navigation",
+      "kit": "tabs",
+      "description": "A segmented switch drawn from Pressables."
+    },
+    "accordion": {
+      "title": "Accordion",
+      "category": "Navigation",
+      "kit": "navigation",
+      "description": "Disclosure rows that build content only while open."
+    },
+    "breadcrumb": {
+      "title": "Breadcrumb",
+      "category": "Navigation",
+      "kit": "breadcrumb",
+      "description": "The path to the current page, ending in plain text."
+    },
+    "pagination": {
+      "title": "Pagination",
+      "category": "Navigation",
+      "kit": "pagination",
+      "description": "Page numbers with ellipses and boundary-aware arrows."
+    },
+    "dialog": {
+      "title": "Dialog",
+      "category": "Overlay",
+      "kit": "overlay",
+      "description": "The platform alert or action sheet."
+    },
+    "confirm-dialog": {
+      "title": "Confirm Dialog",
+      "category": "Overlay",
+      "kit": "overlay",
+      "description": "A yes/no dialog whose destructive action is last."
+    },
+    "menu": {
+      "title": "Menu",
+      "category": "Overlay",
+      "kit": "overlay",
+      "description": "The platform menu, with submenus and inline sections."
+    },
+    "popover": {
+      "title": "Popover",
+      "category": "Overlay",
+      "kit": "popover",
+      "description": "A bubble of content anchored to a trigger, dismissed by tapping outside."
+    },
+    "toast": {
+      "title": "Toast",
+      "category": "Overlay",
+      "kit": "overlay",
+      "description": "The platform snackbar, shown once rather than mounted."
+    },
+    "card": {
+      "title": "Card",
+      "category": "Data display",
+      "kit": "card",
+      "description": "A surface with header, title, description, content and footer."
+    },
+    "badge": {
+      "title": "Badge",
+      "category": "Data display",
+      "kit": "badge",
+      "description": "A small status pill with an optional dot."
+    },
+    "avatar": {
+      "title": "Avatar",
+      "category": "Data display",
+      "kit": "display",
+      "description": "A round image with initials as its fallback."
+    },
+    "table": {
+      "title": "Table",
+      "category": "Data display",
+      "kit": "navigation",
+      "description": "A simple, non-virtualized table for dozens of rows."
+    },
+    "data-table": {
+      "title": "Data Table",
+      "category": "Data display",
+      "kit": "datatable",
+      "description": "A sortable table with pressable rows."
+    },
+    "list": {
+      "title": "List",
+      "category": "Data display",
+      "kit": "list",
+      "description": "Settings-style rows with icons, descriptions, details and trailing actions."
+    },
+    "stat": {
+      "title": "Stat",
+      "category": "Data display",
+      "kit": "stat",
+      "description": "A metric with a label, value, trend and description."
+    },
+    "empty-state": {
+      "title": "Empty State",
+      "category": "Data display",
+      "kit": "empty",
+      "description": "An icon, title, description and action for an empty view."
+    },
+    "alert": {
+      "title": "Alert",
+      "category": "Feedback",
+      "kit": "display",
+      "description": "An inline, non-modal message."
+    },
+    "progress": {
+      "title": "Progress",
+      "category": "Feedback",
+      "kit": "display",
+      "description": "A determinate or indeterminate progress bar."
+    },
+    "progress-ring": {
+      "title": "Progress Ring",
+      "category": "Feedback",
+      "kit": "progressring",
+      "description": "Circular progress for toolbars, rows and compact cards."
+    },
+    "spinner": {
+      "title": "Spinner",
+      "category": "Feedback",
+      "kit": "spinner",
+      "description": "The platform's indeterminate circular progress."
+    },
+    "skeleton": {
+      "title": "Skeleton",
+      "category": "Feedback",
+      "kit": "badge",
+      "description": "A placeholder block for loading content."
+    },
+    "tooltip": {
+      "title": "Tooltip",
+      "category": "Feedback",
+      "kit": "display",
+      "description": "A short hint attached to a control."
+    },
+    "heading": {
+      "title": "Heading",
+      "category": "Typography",
+      "kit": "base",
+      "description": "The page's largest text."
+    },
+    "text": {
+      "title": "Text",
+      "category": "Typography",
+      "kit": "base",
+      "description": "Heading, Title, Text, Muted and Screen."
+    },
+    "kbd": {
+      "title": "Kbd",
+      "category": "Typography",
+      "kit": "kbd",
+      "description": "Keyboard shortcuts as keycaps."
+    }
+  }
+}
