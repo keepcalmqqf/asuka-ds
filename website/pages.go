@@ -7,30 +7,35 @@ import (
 )
 
 func pageHeader(title, subtitle string) ui.Node {
-	return ui.Column(ui.Style{Gap: ds.Space2},
-		ds.Heading(title),
-		ds.Text(subtitle),
+	return ui.Column(ui.Style{Gap: ds.Space4},
+		ui.Column(ui.Style{Gap: ds.Space2},
+			ds.Heading(title),
+			lead(subtitle),
+		),
+		ds.Separator(false),
 	)
 }
 
 func section(title string, children ...ui.Node) ui.Node {
 	return ui.Column(ui.Style{Gap: ds.Space3},
-		ds.Title(title),
+		ui.StaticText(title, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{Font: t.Type.Heading, Color: c.Foreground}
+		})),
 		ui.Column(ui.Style{Gap: ds.Space3}, children...),
 	)
 }
 
 func introPage(d *docs) ui.Node {
-	return ui.Column(ui.Style{Gap: ds.Space6},
-		ui.Column(ui.Style{Gap: ds.Space3},
+	return ui.Column(ui.Style{Gap: ds.Space7},
+		ui.Column(ui.Style{Gap: ds.Space4},
+			ds.Heading("Components that feel native on every platform"),
+			lead("Asuka DS is a source-owned component library for Asuka: shadcn's token structure and composable surfaces, built on platform controls wherever the platform does it better."),
 			ui.Row(ui.Style{Gap: ds.Space2, Align: ui.AlignCenter, Wrap: true},
 				ds.Badge(ds.BadgeProps{Text: "v0.1.0", Variant: ds.Primary}),
 				ds.Badge(ds.BadgeProps{Text: "Go 1.26+", Variant: ds.Outline}),
 				ds.Badge(ds.BadgeProps{Text: "Asuka 0.1.1", Variant: ds.Outline}),
 			),
-			ds.Heading("Components that feel native on every platform"),
-			ds.Text("Asuka DS is a source-owned component library for Asuka: shadcn's token structure and composable surfaces, built on platform controls wherever the platform does it better."),
-			ui.Row(ui.Style{Gap: ds.Space2, Wrap: true},
+			ui.Row(ui.Style{Gap: ds.Space2, Align: ui.AlignCenter, Wrap: true},
 				ds.Button(ds.ButtonProps{Text: "Get started", Variant: ds.Primary,
 					OnPress: func() { d.page.Set("install") }}),
 				ds.Button(ds.ButtonProps{Text: "Browse components", Variant: ds.Outline,
@@ -38,35 +43,17 @@ func introPage(d *docs) ui.Node {
 				link("GitHub", "https://github.com/egoist/asuka-ds"),
 			),
 		),
-		ui.Row(ui.Style{Gap: ds.Space3, Wrap: true, Align: ui.AlignStretch},
-			feature("Native by default", "Buttons, inputs, pickers and overlays use the platform's own controls, so IME, selection, focus and screen readers behave."),
-			feature("Source you own", "The CLI copies Go source into your project. Change the code, keep the API, or vendor the whole design system."),
-			feature("Tokens are typed", "Palette, radii, type and motion are structs. Themes switch at runtime through signals, without remounting the page."),
+		section("A quick look", stage(specimen())),
+		ui.Row(ui.Style{Gap: ds.Space5, Wrap: true, Align: ui.AlignStart},
+			feature("Native by default", "Buttons, inputs, pickers and overlays use the platform's own controls, so IME, selection, focus and screen readers behave.", func(c ds.Palette) ui.Color { return c.Primary }),
+			feature("Source you own", "The CLI copies Go source into your project. Change the code, keep the API, or vendor the whole design system.", func(c ds.Palette) ui.Color { return c.Foreground }),
+			feature("Tokens are typed", "Palette, radii, type and motion are structs. Themes switch at runtime through signals, without remounting the page.", func(c ds.Palette) ui.Color { return c.Focus }),
 		),
 		section("One API, two worlds",
 			ds.Text("Use drawn components for brand consistency and native components on the paths where platform behavior matters more."),
-			code(`ds.Button(ds.ButtonProps{Text: "Save", OnPress: save})        // drawn
+			code("Go", `ds.Button(ds.ButtonProps{Text: "Save", OnPress: save})        // drawn
 ds.NativeButton(ds.ButtonProps{Text: "Pay", OnPress: pay})  // platform
 ds.Input(ds.InputProps{Value: email, Label: "Email"})       // native field, DS shell`),
-		),
-		section("A quick look",
-			ui.Row(ui.Style{Gap: ds.Space3, Wrap: true, Align: ui.AlignStart},
-				ds.Card(ds.CardProps{}, ui.Column(ui.Style{Gap: ds.Space3},
-					ds.CardHeader("Deploy", "Your app is live in three regions."),
-					ui.Row(ui.Style{Gap: ds.Space2},
-						ds.Badge(ds.BadgeProps{Text: "Live", Variant: ds.Outline, Dot: true}),
-						ds.Badge(ds.BadgeProps{Text: "v1.4", Variant: ds.Secondary}),
-					),
-					ds.Progress(ds.ProgressProps{Value: ui.Val(0.72), Label: "Rollout", ShowValue: true}),
-				)),
-				ds.Card(ds.CardProps{}, ui.Column(ui.Style{Gap: ds.Space3},
-					ds.CardHeader("Search", "A command palette, not a menu."),
-					ds.Command(ds.CommandProps{Items: []ds.CommandItem{
-						{Title: "New project", Icon: ui.IconPlus, Keywords: "create"},
-						{Title: "Open settings", Icon: ui.IconSettings, Keywords: "preferences"},
-					}}),
-				)),
-			),
 		),
 		section("Status",
 			ds.Table(ds.TableProps{
@@ -82,32 +69,57 @@ ds.Input(ds.InputProps{Value: email, Label: "Email"})       // native field, DS 
 	)
 }
 
-func feature(title, body string) ui.Node {
-	return ui.View(ui.ViewProps{Style: ui.Style{Grow: 1, Basis: ui.Pt(220)}},
-		ds.Card(ds.CardProps{}, ui.Column(ui.Style{Gap: ds.Space2},
-			ds.CardTitle(ui.Val(title)),
-			ds.Muted(body),
-		)))
+func specimen() ui.Node {
+	return ds.Card(ds.CardProps{}, ui.Column(ui.Style{Gap: ds.Space4},
+		ui.Row(ui.Style{Align: ui.AlignCenter, Justify: ui.JustifySpaceBetween, Gap: ds.Space3},
+			ui.Row(ui.Style{Align: ui.AlignCenter, Gap: ds.Space3, Grow: 1},
+				ds.Avatar(ds.AvatarProps{Name: "Ada Lovelace"}),
+				ui.Column(ui.Style{Gap: 2, Grow: 1},
+					ds.Text("Ada Lovelace"),
+					ds.Muted("ada@example.com"),
+				),
+			),
+			ds.Badge(ds.BadgeProps{Text: "Live", Variant: ds.Outline, Dot: true}),
+		),
+		ds.Separator(false),
+		ds.Progress(ds.ProgressProps{Value: ui.Val(0.72), Label: "Rollout", ShowValue: true}),
+		ui.Row(ui.Style{Justify: ui.JustifyEnd, Gap: ds.Space2, Wrap: true},
+			ds.Button(ds.ButtonProps{Text: "Logs", Variant: ds.Outline, Size: ds.Small}),
+			ds.Button(ds.ButtonProps{Text: "Redeploy", Variant: ds.Primary, Size: ds.Small}),
+		),
+	))
+}
+
+func feature(title, body string, color func(ds.Palette) ui.Color) ui.Node {
+	return ui.View(ui.ViewProps{Style: ui.Style{Grow: 1, Basis: ui.Pt(200), Direction: ui.ColumnDir, Gap: ds.Space2}},
+		ui.View(ui.ViewProps{Decorative: true, Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{Width: ui.Pt(28), Height: ui.Pt(3), CornerRadius: 2, Background: color(c)}
+		})}),
+		ui.StaticText(title, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{Font: t.Type.Subheading, Color: c.Foreground}
+		})),
+		ds.Muted(body),
+	)
 }
 
 func installPage() ui.Node {
-	return ui.Column(ui.Style{Gap: ds.Space6},
+	return ui.Column(ui.Style{Gap: ds.Space7},
 		pageHeader("Installation", "Install the CLI, start a design-system package, then add only the components you need."),
 		section("1. Install the CLI",
-			code(`go install github.com/egoist/asuka-ds/cmd/asuka-ds@latest`),
+			code("Shell", `go install github.com/egoist/asuka-ds/cmd/asuka-ds@latest`),
 			ds.Muted("Or use the module directly: go get github.com/egoist/asuka-ds/ds"),
 		),
 		section("2. Create a package",
-			code(`asuka-ds init --dir internal/ds --package ds`),
+			code("Shell", `asuka-ds init --dir internal/ds --package ds`),
 			ds.Text("init writes the base layer: theme, text, Pressable, Field and the shared variant vocabulary. No components are added yet."),
 		),
 		section("3. Add components",
-			code(`asuka-ds add button input card switch
+			code("Shell", `asuka-ds add button input card switch
 asuka-ds add date-range-picker --dir internal/ds`),
 			ds.Text("Dependencies are resolved for you: add switch also installs overlay.go, and add command installs button.go."),
 		),
 		section("4. Use them",
-			code(`package main
+			code("Go", `package main
 
 import (
     ds "example.com/app/internal/ds"
@@ -135,7 +147,7 @@ func App() ui.Node {
 }
 
 func themesPage() ui.Node {
-	return ui.Column(ui.Style{Gap: ds.Space6},
+	return ui.Column(ui.Style{Gap: ds.Space7},
 		pageHeader("Theming", "Two built-in themes and one typed token layer. Switch them at runtime with signals."),
 		section("Native or Neutral",
 			ds.Table(ds.TableProps{
@@ -151,7 +163,7 @@ func themesPage() ui.Node {
 			ds.Text("Use the Native/Neutral and System/Light/Dark tabs in the header; the whole site is the preview."),
 		),
 		section("Switch at runtime",
-			code(`ds.SetTheme(ds.Native())   // or ds.Neutral()
+			code("Go", `ds.SetTheme(ds.Native())   // or ds.Neutral()
 ds.SetAppearance(ui.ColorSchemeDark)`),
 			ds.Text("SetAppearance updates the host and the design system's own appearance signal, so drawn components change on the click rather than after the host's next redraw."),
 		),
@@ -160,7 +172,7 @@ ds.SetAppearance(ui.ColorSchemeDark)`),
 			palettePreview("Neutral", ds.Neutral().PaletteFor(false)),
 		),
 		section("Escape hatch",
-			code(`ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			code("Go", `ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
     return ui.Style{
         Background:   c.Card,
         Color:        c.Foreground,
@@ -188,25 +200,28 @@ func palettePreview(title string, p ds.Palette) ui.Node {
 	}
 	swatches := make([]ui.Node, 0, len(roles))
 	for _, role := range roles {
-		swatches = append(swatches, ui.Column(ui.Style{Gap: ds.Space1},
-			ui.View(ui.ViewProps{Style: ui.Style{
-				Height: ui.Pt(42), CornerRadius: 6, Background: role.col,
-				BorderWidth: 1, BorderColor: p.Border,
-			}}),
-			ds.Muted(role.name),
-		))
+		swatches = append(swatches, ui.View(ui.ViewProps{Style: ui.Style{Width: ui.Pt(96)}},
+			ui.Column(ui.Style{Gap: ds.Space2},
+				ui.View(ui.ViewProps{Style: ui.Style{
+					Height: ui.Pt(56), CornerRadius: 8, Background: role.col,
+					BorderWidth: 1, BorderColor: p.Border,
+				}}),
+				ds.Muted(role.name),
+			)))
 	}
-	return ui.Column(ui.Style{Gap: ds.Space2},
-		ds.Title(title),
-		ui.Row(ui.Style{Gap: ds.Space2, Wrap: true}, swatches...),
+	return ui.Column(ui.Style{Gap: ds.Space3},
+		ui.StaticText(title, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{Font: t.Type.Subheading, Color: c.Foreground}
+		})),
+		ui.Row(ui.Style{Gap: ds.Space3, Wrap: true}, swatches...),
 	)
 }
 
 func cliPage() ui.Node {
-	return ui.Column(ui.Style{Gap: ds.Space6},
+	return ui.Column(ui.Style{Gap: ds.Space7},
 		pageHeader("CLI & registry", "The registry is a typed catalog plus embedded source. The CLI is a thin, offline installer."),
 		section("Commands",
-			code(`asuka-ds init
+			code("Shell", `asuka-ds init
 asuka-ds add button input card
 asuka-ds add switch --dir internal/ds
 asuka-ds list
@@ -223,7 +238,7 @@ asuka-ds version`),
 		),
 		section("Catalog",
 			ds.Text("The public catalog is internal/catalog/components.json. It names the flat files in ds/ by bare filename, and is the source of truth for the docs, the CLI and dependency resolution."),
-			code(`{
+			code("JSON", `{
   "kits": {
     "combobox": { "files": ["combobox.go"], "requires": ["overlay"] }
   },
@@ -233,7 +248,7 @@ asuka-ds version`),
 }`),
 		),
 		section("Contributing",
-			code(`go generate ./internal/registry   # refresh embedded source
+			code("Shell", `go generate ./internal/registry   # refresh embedded source
 go test ./...`),
 			ds.Text("A drift test fails if the embedded sources no longer match the files in the repository."),
 		),
@@ -241,7 +256,7 @@ go test ./...`),
 }
 
 func qualityPage() ui.Node {
-	return ui.Column(ui.Style{Gap: ds.Space6},
+	return ui.Column(ui.Style{Gap: ds.Space7},
 		pageHeader("Quality & status", "What is tested today, and which platform gaps are known."),
 		section("Checks",
 			ds.Table(ds.TableProps{
@@ -278,7 +293,7 @@ func qualityPage() ui.Node {
 }
 
 func platformsPage() ui.Node {
-	return ui.Column(ui.Style{Gap: ds.Space6},
+	return ui.Column(ui.Style{Gap: ds.Space7},
 		pageHeader("Platforms", "What was built and seen on each host, and what is still a preview."),
 		section("Verified on 2026-11-15",
 			ds.Table(ds.TableProps{
@@ -313,7 +328,7 @@ func platformsPage() ui.Node {
 			}),
 		),
 		section("Reproduce",
-			code(`asuka build --platform mac demo
+			code("Shell", `asuka build --platform mac demo
 asuka build --platform ios --simulator demo
 asuka dev --platform android --once -d emulator-5554 demo
 asuka build --platform web website`),
@@ -334,23 +349,19 @@ func componentPage(d *docs, name string) ui.Node {
 		sourceLinks = append(sourceLinks, link(file, "https://github.com/egoist/asuka-ds/blob/main/"+catalog.SourceDir+"/"+file))
 	}
 	kids := []ui.Node{
-		ui.Column(ui.Style{Gap: ds.Space2},
-			ui.Row(ui.Style{Gap: ds.Space2, Align: ui.AlignCenter, Wrap: true},
-				ds.Badge(ds.BadgeProps{Text: component.Category, Variant: ds.Secondary}),
-				ds.Muted("install: asuka-ds add "+name),
-			),
+		ui.Column(ui.Style{Gap: ds.Space3},
+			ui.Row(ui.Style{Align: ui.AlignCenter},
+				ds.Badge(ds.BadgeProps{Text: component.Category, Variant: ds.Secondary})),
 			ds.Heading(component.Title),
-			ds.Text(component.Description),
+			lead(component.Description),
+			installChip(name),
 		),
 	}
 	if hasExample {
-		kids = append(kids, section("Preview", ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-			return ui.Style{Padding: ui.All(ds.Space5), Background: c.Background,
-				BorderWidth: 1, BorderColor: c.Border, CornerRadius: t.Radii.LG}
-		})}, example)))
+		kids = append(kids, section("Preview", stage(example)))
 	}
 	if snippet != "" {
-		kids = append(kids, section("Usage", code(snippet)))
+		kids = append(kids, section("Usage", code("Go", snippet)))
 	}
 	kids = append(kids, section("Behavior",
 		ds.Text(behaviorFor(component)),
@@ -359,7 +370,21 @@ func componentPage(d *docs, name string) ui.Node {
 	if len(sourceLinks) > 0 {
 		kids = append(kids, section("Source", ui.Row(ui.Style{Gap: ds.Space2, Wrap: true}, sourceLinks...)))
 	}
-	return ui.Column(ui.Style{Gap: ds.Space6}, kids...)
+	return ui.Column(ui.Style{Gap: ds.Space7}, kids...)
+}
+
+func installChip(name string) ui.Node {
+	label := "install: asuka-ds add " + name
+	return ui.Row(ui.Style{Align: ui.AlignCenter},
+		ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{
+				Padding: ui.Symmetric(ds.Space2, ds.Space3), CornerRadius: t.Radii.SM,
+				Background: c.Muted, BorderWidth: 1, BorderColor: c.Border,
+			}
+		})}, ui.StaticText(label, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{Font: fontsMono(t, 12), Color: c.Foreground, Lines: 1}
+		}))),
+	)
 }
 
 func behaviorFor(component catalog.Component) string {

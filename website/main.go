@@ -4,6 +4,7 @@ import (
 	ds "github.com/egoist/asuka-ds/ds"
 	"github.com/egoist/asuka-ds/internal/catalog"
 	"github.com/egoist/asuka/app"
+	"github.com/egoist/asuka/colors"
 	"github.com/egoist/asuka/fonts"
 	"github.com/egoist/asuka/signal"
 	"github.com/egoist/asuka/ui"
@@ -33,19 +34,26 @@ func App() ui.Node {
 	})
 	signal.Effect(func() { ds.SetAppearance(ui.ColorScheme(appearance.Get())) })
 
+	env := ui.UseEnvironment()
 	return ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
 		return ui.Style{Grow: 1, Background: c.Background}
 	})},
 		ui.SafeArea(ui.Style{Grow: 1},
 			ui.Column(ui.Style{Grow: 1},
 				header(d, themeIndex, appearance),
-				ui.Row(ui.Style{Grow: 1},
+				ui.Row(ui.Style{Grow: 1, Align: ui.AlignStretch},
 					sidebar(d),
 					ui.Scroll(ui.ScrollProps{Style: ui.Style{Grow: 1}},
-						ui.View(ui.ViewProps{Style: ui.Style{
-							Width: ui.Pct(100), MaxWidth: ui.Pt(900), AlignSelf: ui.AlignCenter,
-							Padding: ui.All(ds.Space6), Gap: ds.Space6, Direction: ui.ColumnDir,
-						}}, ui.Dynamic(func() ui.Node { return pageFor(d, d.page.Get()) })),
+						ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+							pad := ui.Edges{Top: ds.Space7, Right: ds.Space6, Bottom: ds.Space8, Left: ds.Space6}
+							if env.Get().WidthClass == ui.SizeClassCompact {
+								pad = ui.Edges{Top: ds.Space5, Right: ds.Space4, Bottom: ds.Space6, Left: ds.Space4}
+							}
+							return ui.Style{
+								Width: ui.Pct(100), MaxWidth: ui.Pt(820), AlignSelf: ui.AlignCenter,
+								Padding: pad, Direction: ui.ColumnDir,
+							}
+						})}, ui.Dynamic(func() ui.Node { return pageFor(d, d.page.Get()) })),
 					),
 				),
 			),
@@ -54,35 +62,62 @@ func App() ui.Node {
 }
 
 func header(d *docs, themeIndex, appearance *signal.Signal[int]) ui.Node {
-	return ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-		return ui.Style{
-			Direction: ui.RowDir, Wrap: true, Align: ui.AlignCenter,
-			Justify: ui.JustifySpaceBetween, Gap: ds.Space3,
-			Padding:    ui.Symmetric(ds.Space3, ds.Space5),
-			Background: c.Card, BorderWidth: 1, BorderColor: c.Border,
-		}
-	})},
-		ui.Row(ui.Style{Gap: ds.Space3, Align: ui.AlignCenter},
-			ui.View(ui.ViewProps{Decorative: true, Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-				return ui.Style{
-					Width: ui.Pt(30), Height: ui.Pt(30), CornerRadius: 8,
-					Align: ui.AlignCenter, Justify: ui.JustifyCenter, Background: c.Primary,
-				}
-			})}, ui.Symbol("square.grid.2x2.fill", ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-				return ui.Style{Font: t.Type.Caption, Color: c.PrimaryForeground}
-			}))),
-			ui.Column(ui.Style{Gap: 0},
-				ds.Text("Asuka DS"),
-				ds.Muted("Components for Asuka"),
+	env := ui.UseEnvironment()
+	return ui.Column(ui.Style{},
+		ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			style := ui.Style{
+				Direction: ui.RowDir, Wrap: true, Align: ui.AlignCenter,
+				Justify: ui.JustifySpaceBetween, Gap: ds.Space4,
+				Padding: ui.Symmetric(ds.Space3, ds.Space5),
+			}
+			if env.Get().WidthClass == ui.SizeClassCompact {
+				style.Gap = ds.Space2
+				style.Padding = ui.Symmetric(ds.Space2, ds.Space4)
+			}
+			return style
+		})},
+			ui.Row(ui.Style{Gap: ds.Space3, Align: ui.AlignCenter},
+				mark(),
+				ui.StaticText("Asuka DS", ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+					return ui.Style{Font: t.Type.Title, Color: c.Foreground, Lines: 1}
+				})),
+			),
+			ui.Row(ui.Style{Gap: ds.Space2, Align: ui.AlignCenter, Wrap: true},
+				compactBrowse(d),
+				ui.View(ui.ViewProps{Style: ui.Style{Width: ui.Pt(compactWidth(176, env))}},
+					ds.Tabs(ds.TabsProps{Items: []string{"Native", "Neutral"}, Selected: themeIndex})),
+				ui.View(ui.ViewProps{Style: ui.Style{Width: ui.Pt(compactWidth(228, env))}},
+					ds.Tabs(ds.TabsProps{Items: []string{"System", "Light", "Dark"}, Selected: appearance})),
+				link("GitHub", "https://github.com/egoist/asuka-ds"),
 			),
 		),
-		ui.Row(ui.Style{Gap: ds.Space3, Align: ui.AlignCenter, Wrap: true},
-			compactBrowse(d),
-			ui.View(ui.ViewProps{Style: ui.Style{Width: ui.Pt(200)}},
-				ds.Tabs(ds.TabsProps{Items: []string{"Native", "Neutral"}, Selected: themeIndex})),
-			ui.View(ui.ViewProps{Style: ui.Style{Width: ui.Pt(250)}},
-				ds.Tabs(ds.TabsProps{Items: []string{"System", "Light", "Dark"}, Selected: appearance})),
-			link("GitHub", "https://github.com/egoist/asuka-ds"),
+		ds.Separator(false),
+	)
+}
+
+func compactWidth(expanded float32, env signal.Accessor[ui.Environment]) float32 {
+	if env.Get().WidthClass == ui.SizeClassCompact {
+		return expanded * 0.76
+	}
+	return expanded
+}
+
+// mark is four live theme swatches. It changes with Native/Neutral and
+// light/dark, so the wordmark is itself a token specimen.
+func mark() ui.Node {
+	swatch := func(color func(ds.Palette) ui.Color) ui.Node {
+		return ui.View(ui.ViewProps{Decorative: true, Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{Width: ui.Pt(8), Height: ui.Pt(8), CornerRadius: 2, Background: color(c)}
+		})})
+	}
+	return ui.View(ui.ViewProps{Decorative: true, Style: ui.Style{Direction: ui.RowDir, Gap: 2}},
+		ui.Column(ui.Style{Gap: 2},
+			swatch(func(c ds.Palette) ui.Color { return c.Primary }),
+			swatch(func(c ds.Palette) ui.Color { return c.Foreground }),
+		),
+		ui.Column(ui.Style{Gap: 2},
+			swatch(func(c ds.Palette) ui.Color { return c.Focus }),
+			swatch(func(c ds.Palette) ui.Color { return c.Border }),
 		),
 	)
 }
@@ -141,9 +176,10 @@ func sidebar(d *docs) ui.Node {
 			kids = append(kids, navSection(category.Name, items...))
 		}
 		return ui.Row(ui.Style{Height: ui.Pct(100)},
-			ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-				return ui.Style{Width: ui.Pt(250), Shrink: ui.NoShrink, Padding: ui.All(ds.Space4), Background: c.Card}
-			})}, ui.Scroll(ui.ScrollProps{Style: ui.Style{Grow: 1}},
+			ui.View(ui.ViewProps{Style: ui.Style{
+				Width: ui.Pt(232), Shrink: ui.NoShrink, Height: ui.Pct(100),
+				Padding: ui.Symmetric(ds.Space5, ds.Space3),
+			}}, ui.Scroll(ui.ScrollProps{Style: ui.Style{Grow: 1}},
 				ui.Column(ui.Style{Gap: ds.Space5}, kids...))),
 			ds.Separator(true),
 		)
@@ -152,8 +188,10 @@ func sidebar(d *docs) ui.Node {
 
 func navSection(title string, items ...ui.Node) ui.Node {
 	return ui.Column(ui.Style{Gap: ds.Space1},
-		ui.View(ui.ViewProps{Style: ui.Style{Padding: ui.Symmetric(0, ds.Space2)}},
-			ds.Muted(title)),
+		ui.View(ui.ViewProps{Style: ui.Style{Padding: ui.Edges{Left: 19, Right: ds.Space2, Bottom: 2}}},
+			ui.StaticText(title, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+				return ui.Style{Font: t.Type.Caption.Weighted(fonts.Medium), Color: c.MutedForeground, Lines: 1}
+			}))),
 		ui.Column(ui.Style{Gap: 2}, items...),
 	)
 }
@@ -165,7 +203,11 @@ func navItem(d *docs, id, label string) ui.Node {
 		Selected: selected,
 		OnPress:  func() { d.page.Set(id) },
 		Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-			s := ui.Style{Padding: ui.Symmetric(ds.Space2, ds.Space2), CornerRadius: t.Radii.SM}
+			s := ui.Style{
+				Direction: ui.RowDir, Align: ui.AlignCenter, Gap: ds.Space2, Width: ui.Pct(100),
+				Padding:      ui.Edges{Top: 7, Right: ds.Space2, Bottom: 7, Left: ds.Space2},
+				CornerRadius: t.Radii.SM,
+			}
 			if selected.Get() {
 				s.Background = c.Muted
 			} else {
@@ -173,13 +215,24 @@ func navItem(d *docs, id, label string) ui.Node {
 			}
 			return s
 		}),
-	}, ui.StaticText(label, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-		col := c.MutedForeground
-		if selected.Get() {
-			col = c.Foreground
-		}
-		return ui.Style{Font: t.Type.Small, Color: col, Lines: 1}
-	})))
+	},
+		ui.View(ui.ViewProps{Decorative: true, Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			s := ui.Style{Width: ui.Pt(3), Height: ui.Pt(14), CornerRadius: 2, Background: colors.Clear}
+			if selected.Get() {
+				s.Background = c.Primary
+			}
+			return s
+		})}),
+		ui.StaticText(label, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			font := t.Type.Small
+			col := c.MutedForeground
+			if selected.Get() {
+				font = font.Weighted(fonts.Medium)
+				col = c.Foreground
+			}
+			return ui.Style{Font: font, Color: col, Lines: 1}
+		})),
+	)
 }
 
 func link(label, href string) ui.Node {
@@ -188,31 +241,75 @@ func link(label, href string) ui.Node {
 		Role:  ui.RoleLink,
 		Href:  ui.Href(href),
 		Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-			return ui.Style{Padding: ui.Symmetric(ds.Space2, ds.Space3), CornerRadius: t.Radii.SM,
-				Hovered: &ui.Style{Background: c.Muted}}
+			return ui.Style{
+				Padding: ui.Symmetric(6, ds.Space3), CornerRadius: t.Radii.SM,
+				BorderWidth: 1, BorderColor: c.Border,
+				Hovered: &ui.Style{Background: c.Muted},
+			}
 		}),
-	}, ds.Text(label))
+	}, ui.StaticText(label, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+		return ui.Style{Font: t.Type.Small, Color: c.Foreground, Lines: 1}
+	})))
 }
 
-func code(src string) ui.Node {
+func code(language, src string) ui.Node {
 	return ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
 		return ui.Style{
-			Padding: ui.All(ds.Space4), Background: c.Muted,
-			BorderWidth: 1, BorderColor: c.Border, CornerRadius: t.Radii.MD,
-			Gap: ds.Space3,
+			Padding: ui.All(ds.Space4), Gap: ds.Space2, Clip: true,
+			Background: c.Card, BorderWidth: 1, BorderColor: c.Border, CornerRadius: t.Radii.MD,
 		}
 	})},
-		ui.StaticText(src, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
-			return ui.Style{Font: fontsMono(t, 12), Color: c.Foreground}
-		})),
-		ui.Row(ui.Style{Justify: ui.JustifyEnd},
-			ds.Button(ds.ButtonProps{Text: "Copy", Variant: ds.Ghost, Size: ds.Small,
-				OnPress: func() {
-					ui.Copy(src)
-					ds.Toast("Copied", nil)
-				}}),
+		ui.Row(ui.Style{Justify: ui.JustifySpaceBetween, Align: ui.AlignCenter, Width: ui.Pct(100)},
+			ui.StaticText(language, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+				return ui.Style{Font: fontsMono(t, 12).Weighted(fonts.Medium), Color: c.MutedForeground, Lines: 1}
+			})),
+			copyControl(src),
 		),
+		ds.Separator(false),
+		ui.RichText(ui.RichTextProps{
+			Text: signal.Func(func() ui.Rich { return highlight(language, src) }),
+			Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+				return ui.Style{Font: fontsMono(t, 13), Color: c.Foreground}
+			}),
+		}),
 	)
+}
+
+func copyControl(src string) ui.Node {
+	return ds.Pressable(ds.PressableProps{
+		Label: "Copy",
+		OnPress: func() {
+			ui.Copy(src)
+			ds.Toast("Copied", nil)
+		},
+		Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{
+				Padding: ui.Symmetric(ds.Space1, ds.Space2), CornerRadius: t.Radii.SM,
+				Hovered: &ui.Style{Background: c.Muted},
+			}
+		}),
+	}, ui.StaticText("Copy", ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+		return ui.Style{Font: t.Type.Small.Weighted(fonts.Medium), Color: c.Foreground, Lines: 1}
+	})))
+}
+
+// stage is the preview ground: a muted field so components, which are
+// usually card-colored, read as objects on a surface.
+func stage(child ui.Node) ui.Node {
+	return ui.View(ui.ViewProps{Style: ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+		return ui.Style{
+			Padding: ui.All(ds.Space6), Background: c.Muted,
+			BorderWidth: 1, BorderColor: c.Border, CornerRadius: t.Radii.LG,
+		}
+	})}, child)
+}
+
+// lead is a page's supporting sentence, held to a reading measure.
+func lead(text string) ui.Node {
+	return ui.View(ui.ViewProps{Style: ui.Style{MaxWidth: ui.Pt(640)}},
+		ui.StaticText(text, ds.Themed(func(t ds.Theme, c ds.Palette) ui.Style {
+			return ui.Style{Font: t.Type.Body, Color: c.MutedForeground}
+		})))
 }
 
 func fontsMono(t ds.Theme, size float32) (f fonts.Font) {

@@ -12,3 +12,7 @@ asuka build --platform web website   # website/dist/web
 names, kits and install instructions come from
 `internal/catalog/components.json`, so a new component only needs a preview
 once its kit is registered.
+
+`highlight.go` gives code blocks a small, theme-aware syntax highlighter for
+Go, Shell and JSON. It builds Asuka `RichText` spans from the snippet; the
+original text is copied verbatim by `code`'s Copy control.
