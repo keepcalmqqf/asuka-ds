@@ -1,8 +1,7 @@
 # Website
 
 The Asuka DS documentation site, built with Asuka DS itself. It is an app
-entry (`package main`) that imports the root `ds` package and
-`internal/catalog`.
+entry (`package main`) that imports the `ds` package and `internal/catalog`.
 
 ```sh
 asuka dev --platform web website
