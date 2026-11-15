@@ -3,3 +3,7 @@ site/dist/
 *.app/
 node_modules/
 .DS_Store
+
+# Local `go build` outputs (extensionless binaries)
+/demo/demo
+/demo-form/demo-form
